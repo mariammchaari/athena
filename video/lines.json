@@ -1,0 +1,12 @@
+[
+ {"id":"01","start":12.9,"max":3.4,"text":"Hey! I'm Pingo, and I'm your learning companion."},
+ {"id":"02","start":16.5,"max":5.0,"text":"Stuck on a lesson with no one to explain it? Come with me, I'll show you Athena!"},
+ {"id":"03","start":22.7,"max":4.5,"text":"This is Athena! I teach in Arabic, Darija, French or English."},
+ {"id":"04","start":27.5,"max":4.4,"text":"Joining takes seconds: pick a username, a nickname and a password."},
+ {"id":"05","start":32.1,"max":4.6,"text":"Next, a quick quiz, and my AI figures out how you learn best."},
+ {"id":"06","start":38.1,"max":6.4,"text":"Ask me anything! Pick how I teach, and every question earns you ten XP."},
+ {"id":"07","start":45.6,"max":6.0,"text":"In your garden, every goal is a plant. Master it, and it blooms for fifty XP!"},
+ {"id":"08","start":51.9,"max":3.6,"text":"Level up, and my olive sprig grows into a crown!"},
+ {"id":"09","start":56.4,"max":8.5,"text":"Hackathons! My AI writes your brief and your challenge. Ask me in Team Chat, then compete together!"},
+ {"id":"10","start":75.6,"max":6.5,"text":"So, what are you waiting for? Your next level is waiting! Join me on Athena!"}
+]

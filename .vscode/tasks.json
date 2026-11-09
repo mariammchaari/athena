@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ATHENA: 1. Setup (first time only)",
+      "type": "shell",
+      "command": "cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && (test -f .env || cp .env.example .env) && cd ../frontend && npm install",
+      "windows": {
+        "command": "cd backend; python -m venv .venv; .venv\\Scripts\\pip install -r requirements.txt; if (!(Test-Path .env)) { Copy-Item .env.example .env }; cd ..\\frontend; npm install"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ATHENA: backend",
+      "type": "shell",
+      "command": ".venv/bin/uvicorn main:app --reload --host 127.0.0.1 --port 8000",
+      "windows": { "command": ".venv\\Scripts\\uvicorn main:app --reload --host 127.0.0.1 --port 8000" },
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "isBackground": true,
+      "presentation": { "panel": "dedicated", "group": "athena" },
+      "problemMatcher": []
+    },
+    {
+      "label": "ATHENA: frontend",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      "presentation": { "panel": "dedicated", "group": "athena" },
+      "problemMatcher": []
+    },
+    {
+      "label": "ATHENA: 2. Start (backend + frontend)",
+      "dependsOn": ["ATHENA: backend", "ATHENA: frontend"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}

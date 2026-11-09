@@ -1,0 +1,11 @@
+backend/.env
+backend/.secret
+backend/*.db
+backend/*.db-*
+backend/__pycache__/
+backend/.venv/
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+video/build/
+video/*.mp4
