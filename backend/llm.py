@@ -15,7 +15,7 @@ FAST_MODEL = FAST_MODEL or LARGE_MODEL
 LARGE_MODEL = LARGE_MODEL or FAST_MODEL
 CONCURRENCY = {"fast": int(_env("COMPACT_CONCURRENCY", _env("FAST_CONCURRENCY", "2"))),
                "large": int(_env("MIDSIZE_CONCURRENCY", _env("LARGE_CONCURRENCY", "1")))}
-MAX_CONCURRENT = int(_env("LLM_MAX_CONCURRENT", "3"))
+MAX_CONCURRENT = int(_env("LLM_MAX_CONCURRENT", "2"))
 TIMEOUT = {"fast": float(_env("COMPACT_TIMEOUT", _env("FAST_TIMEOUT", "60"))),
            "large": float(_env("MIDSIZE_TIMEOUT", _env("LARGE_TIMEOUT", "180"))), "embed": 60.0}
 JSON_MODE = _env("LLM_JSON_MODE", "0") == "1"

@@ -273,3 +273,23 @@ def offline_judge(problem, answer):
     base = 3 if words < 40 else 5 if words < 120 else 6
     return {"scores": [{"name": r["name"], "score": base, "comment": "Estimated offline (no AI judge available)."} for r in problem["rubric"]],
             "strength": "You submitted a full answer.", "improve": "Ask the host to connect the AI service for a real review.", "offline": True}
+
+
+def plan_prompt(goal, lang_rule_text, level, style):
+    return ("TASK=STUDY_PLAN\nYou are Pingo, a friendly study coach. Turn the student's goal into a short study plan they can tick off. "
+            f"Student level: {level or 'undergraduate'}. Preferred learning style: {style or 'not known'}. {lang_rule_text} "
+            "Answer with JSON only: {\"steps\": [{\"t\": short action title (max 60 chars), \"why\": one sentence on what this step "
+            "achieves}]} with 3 to 5 steps, ordered from basics to mastery, each doable in one sitting, the last one a self-test.")
+
+def validate_plan(d):
+    st = d["steps"]
+    assert isinstance(st, list) and 3 <= len(st) <= 6
+    for x in st:
+        assert isinstance(x["t"], str) and x["t"].strip() and isinstance(x.get("why", ""), str)
+
+def offline_plan(goal):
+    return {"steps": [{"t": "Learn the key ideas", "why": f"Write what “{goal}” means in your own words."},
+                      {"t": "Work through one example", "why": "See the idea in action, step by step."},
+                      {"t": "Explain it to a friend", "why": "Teaching it shows what you really understand."},
+                      {"t": "Test yourself", "why": "Answer a practice question without notes."}],
+            "source": "offline"}

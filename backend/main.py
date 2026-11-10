@@ -89,6 +89,7 @@ def init_db():
         _add_column(c, "users", "style", "TEXT DEFAULT ''")
         _add_column(c, "users", "diag_done", "INTEGER DEFAULT 0")
         _add_column(c, "messages", "meta", "TEXT")
+        _add_column(c, "goals", "plan", "TEXT")
 init_db()
 llm.init(DB_PATH)
 
@@ -415,10 +416,56 @@ class Goal(BaseModel):
     mastery: Optional[int] = Field(default=None, ge=0, le=100)
     done: Optional[bool] = None
 
+def _goal_out(r):
+    d = dict(r); d["plan"] = json.loads(d["plan"]) if d.get("plan") else None
+    return d
+
 @app.get("/api/goals")
 def goals(u=Depends(current_user)):
     with db() as c:
-        return [dict(r) for r in c.execute("SELECT id,title,subject,mastery,done FROM goals WHERE user_id=? ORDER BY done,id DESC", (u["id"],))]
+        return [_goal_out(r) for r in c.execute("SELECT id,title,subject,mastery,done,plan FROM goals WHERE user_id=? ORDER BY done,id DESC", (u["id"],))]
+
+@app.post("/api/goals/{gid}/plan")
+async def make_plan(gid: int, u=Depends(current_user)):
+    with db() as c:
+        r = c.execute("SELECT title FROM goals WHERE id=? AND user_id=?", (gid, u["id"])).fetchone()
+    if not r:
+        raise HTTPException(404, "Goal not found.")
+    plan = None
+    if llm.configured():
+        try:
+            ai_budget(u["id"])
+            data, res = await llm.complete_json("large", C.plan_prompt(r["title"], lang_rule(u), u["level"], u["style"]),
+                                                llm.scrub("Goal: " + r["title"]), max_tokens=700, validate=C.validate_plan)
+            plan = {"steps": [{"t": x["t"].strip()[:80], "why": (x.get("why") or "").strip()[:200]} for x in data["steps"][:5]],
+                    "source": "ai", "model": res.get("tier", "large")}
+        except (llm.Unavailable, ValueError, KeyError, TypeError, AssertionError):
+            plan = None
+    if not plan:
+        plan = C.offline_plan(r["title"])
+    for x in plan["steps"]:
+        x["done"] = False
+    with db() as c:
+        c.execute("UPDATE goals SET plan=?, mastery=0, done=0 WHERE id=?", (json.dumps(plan), gid))
+        return _goal_out(c.execute("SELECT id,title,subject,mastery,done,plan FROM goals WHERE id=?", (gid,)).fetchone())
+
+class StepTick(BaseModel):
+    done: bool
+
+@app.patch("/api/goals/{gid}/plan/{i}")
+def tick_step(gid: int, i: int, s: StepTick, u=Depends(current_user)):
+    with db() as c:
+        r = c.execute("SELECT plan FROM goals WHERE id=? AND user_id=?", (gid, u["id"])).fetchone()
+        if not r or not r["plan"]:
+            raise HTTPException(404, "No study plan for this goal.")
+        plan = json.loads(r["plan"])
+        if not 0 <= i < len(plan["steps"]):
+            raise HTTPException(404, "No such step.")
+        plan["steps"][i]["done"] = s.done
+        n = sum(1 for x in plan["steps"] if x["done"]); total = len(plan["steps"])
+        c.execute("UPDATE goals SET plan=?, mastery=?, done=? WHERE id=?",
+                  (json.dumps(plan), round(100 * n / total), int(n == total), gid))
+        return _goal_out(c.execute("SELECT id,title,subject,mastery,done,plan FROM goals WHERE id=?", (gid,)).fetchone())
 
 @app.post("/api/goals")
 def add_goal(g: Goal, u=Depends(current_user)):

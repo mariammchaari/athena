@@ -817,3 +817,27 @@ label .hint { font-weight:700; font-size:.78rem; color:var(--faint); }
 .mx-list li small { font-size:.75rem; color:var(--muted); font-weight:700; background:#fff; padding:.05rem .45rem; border-radius:99px; }
 .mx-list code { font:.8rem ui-monospace,Menlo,monospace; background:#fff; padding:.1rem .4rem; border-radius:6px; }
 .mx-list b.ok { color:var(--leaf-d); font-size:.78rem; } .mx-list b.ko { color:var(--red); font-size:.78rem; }
+
+/* Study plans in the garden */
+.btn3d.violet { --bg:var(--violet); --edge:#5A3FD6; --fg:#fff; }
+.bed.has-plan { grid-column:span 2; grid-template-rows:none; grid-template-columns:220px 1fr; }
+.bed.has-plan .bed-plant { align-self:start; height:100%; max-height:300px; min-height:240px; }
+@media (max-width:700px) { .bed.has-plan { grid-column:auto; grid-template-columns:1fr; } }
+.plan { display:grid; gap:.55rem; }
+.plan-head { display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:.78rem; font-weight:800; }
+.plan-src { padding:.25rem .65rem; border-radius:99px; background:#ECE7FF; color:#5A3FD6; }
+.plan-src.offline { background:#EEF1F8; color:var(--muted); }
+.plan-count { color:var(--muted); }
+.bigbar.sm { height:10px; max-width:none; border:0; background:var(--sky); }
+.bigbar.sm span { background:linear-gradient(90deg,var(--leaf),#7BE0A6); }
+.plan-steps { list-style:none; margin:0; padding:0; display:grid; gap:.4rem; counter-reset:st; }
+.plan-steps li { display:flex; align-items:center; gap:.6rem; justify-content:space-between; padding:.55rem .7rem; border-radius:14px; background:var(--cloud); border:2px solid var(--line); transition:background .3s, border-color .3s; }
+.plan-steps li.done { background:#E9FBF1; border-color:#B5EBCB; }
+.plan-steps label { display:flex; gap:.6rem; align-items:flex-start; cursor:pointer; flex:1; }
+.plan-steps input { width:20px; height:20px; margin-top:.1rem; accent-color:var(--leaf); flex:none; cursor:pointer; }
+.plan-steps b { display:block; font-weight:800; font-size:.88rem; }
+.plan-steps small { display:block; color:var(--muted); font-size:.76rem; line-height:1.35; }
+.plan-steps li.done b { text-decoration:line-through; text-decoration-color:#2FBF7188; color:var(--leaf-d); }
+.linkish { background:none; border:0; color:var(--blue); font:inherit; font-weight:800; font-size:.76rem; cursor:pointer; white-space:nowrap; padding:.2rem; }
+.linkish:hover { text-decoration:underline; }
+.plan-intro { margin:0; font-size:.78rem; }

@@ -633,8 +633,9 @@ function Study({ id, onCreate, onActivate, t, lang, user, level, onChanged, onEa
   );
 }
 
-function GoalCard({ g, t, act, onStudy, onBloom }) {
+function GoalCard({ g, t, act, onStudy, onBloom, onThink }) {
   const [m, setM] = useState(g.mastery);
+  const [busy, setBusy] = useState(false);
   const timer = useRef(); const ref = useRef();
   useEffect(() => setM(g.mastery), [g.mastery]);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -644,9 +645,22 @@ function GoalCard({ g, t, act, onStudy, onBloom }) {
     act(api("/goals/" + g.id, "PATCH", done ? { done, mastery: 100 } : { done }));
     if (done) { burstFrom(ref.current, 1.1); onBloom(); }
   };
+  const makePlan = async () => {
+    setBusy(true); onThink(true);
+    try { await act(api("/goals/" + g.id + "/plan", "POST")); } finally { setBusy(false); onThink(false); }
+  };
+  const tick = (i, done) => {
+    const steps = g.plan.steps.map((x, j) => (j === i ? { ...x, done } : x));
+    const n = steps.filter((x) => x.done).length;
+    setM(Math.round((100 * n) / steps.length));
+    if (n === steps.length) { burstFrom(ref.current, 1.1); onBloom(); }
+    act(api("/goals/" + g.id + "/plan/" + i, "PATCH", { done }));
+  };
   const s = stageOf(m, g.done);
+  const plan = g.plan;
+  const nDone = plan ? plan.steps.filter((x) => x.done).length : 0;
   return (
-    <li className={"bed" + (g.done ? " done" : "")} ref={ref}>
+    <li className={"bed" + (g.done ? " done" : "") + (plan ? " has-plan" : "")} ref={ref}>
       <div className="bed-plant"><Plant mastery={m} done={!!g.done} size={150} /></div>
       <div className="bed-body">
         <div className="bed-top">
@@ -654,13 +668,36 @@ function GoalCard({ g, t, act, onStudy, onBloom }) {
           <button className="x" aria-label={t.del + ": " + g.title} onClick={() => act(api("/goals/" + g.id, "DELETE"))}>×</button>
         </div>
         <h3 dir="auto">{g.title}</h3>
-        {!g.done && (
-          <label className="grow small"><span>{t.masteryQ} <b>{m}%</b></span>
-            <input type="range" min="0" max="100" step="5" value={m} onChange={(e) => change(+e.target.value)} style={{ "--m": m + "%" }} /></label>
+        {plan ? (
+          <div className="plan">
+            <div className="plan-head">
+              <span className={"plan-src " + plan.source}>{plan.source === "ai" ? "✨ " + t.planAi : t.planOffline}</span>
+              <span className="plan-count">{t.planDone(nDone, plan.steps.length)}</span>
+            </div>
+            <div className="bigbar sm"><span style={{ width: m + "%" }} /></div>
+            <ol className="plan-steps">
+              {plan.steps.map((x, i) => (
+                <li key={i} className={x.done ? "done" : ""}>
+                  <label>
+                    <input type="checkbox" checked={!!x.done} onChange={(e) => tick(i, e.target.checked)} />
+                    <span><b dir="auto">{x.t}</b>{x.why && <small dir="auto">{x.why}</small>}</span>
+                  </label>
+                  {!x.done && <button className="linkish" onClick={() => onStudy(x.t + " (" + g.title + ")")}>{t.askStep} →</button>}
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : !g.done && (
+          <>
+            <label className="grow small"><span>{t.masteryQ} <b>{m}%</b></span>
+              <input type="range" min="0" max="100" step="5" value={m} onChange={(e) => change(+e.target.value)} style={{ "--m": m + "%" }} /></label>
+            <p className="plan-intro faint">{busy ? t.planning : t.planIntro}</p>
+          </>
         )}
         <div className="bed-actions">
-          {!g.done && <button className="btn3d sm" onClick={() => onStudy(g.title)}>{t.studyThis}</button>}
-          <button className={"btn3d sm " + (g.done ? "gold" : "green")} aria-pressed={!!g.done} onClick={toggle}>{g.done ? "✓ " + t.mastered : t.markMastered}</button>
+          {!g.done && !plan && <button className="btn3d sm violet" disabled={busy} onClick={makePlan}>{busy ? "…" : t.makePlan}</button>}
+          {!g.done && !plan && <button className="btn3d sm" onClick={() => onStudy(g.title)}>{t.studyThis}</button>}
+          {(!plan || g.done) && <button className={"btn3d sm " + (g.done ? "gold" : "green")} aria-pressed={!!g.done} onClick={toggle}>{g.done ? "✓ " + t.mastered : t.markMastered}</button>}
         </div>
       </div>
     </li>
@@ -671,6 +708,7 @@ function GardenPage({ t, lang, L, xp, streak, onStudy, onEarned }) {
   const [goals, setGoals] = useState(null);
   const [title, setTitle] = useState(""); const [err, setErr] = useState("");
   const [flash, fire] = useFlash();
+  const [thinking, setThinking] = useState(false);
   const load = () => api("/goals").then(setGoals).catch((e) => { setErr(e.message); setGoals([]); });
   useEffect(() => { load(); }, []);
   const act = (p, reload = true) => p.then(() => { setErr(""); if (reload) { load(); onEarned(); } }).catch((e) => setErr(e.message));
@@ -683,7 +721,7 @@ function GardenPage({ t, lang, L, xp, streak, onStudy, onEarned }) {
         <GardenScene tall={false} className="ghero-scene" />
         <div className="ghero-pingo">
           {flash && <Bubble key={flash.k} className="perch-bubble">{flash.line}</Bubble>}
-          <Pingo mood={flash?.mood || "idle"} size={150} level={L.level} onPoke={() => fire("happy", pick(t.pokes), 1400)} />
+          <Pingo mood={flash?.mood || (thinking ? "thinking" : "idle")} size={150} level={L.level} onPoke={() => fire("happy", pick(t.pokes), 1400)} />
         </div>
         <div className="ghero-info">
           <h1>{t.yourGarden}</h1>
@@ -703,7 +741,7 @@ function GardenPage({ t, lang, L, xp, streak, onStudy, onEarned }) {
       </form>
       {err && <p className="err" role="alert">{err}</p>}
       {goals?.length === 0 && <p className="empty-garden">{t.emptyGarden}</p>}
-      <ul className="beds">{goals?.map((g) => <GoalCard key={g.id} g={g} t={t} act={act} onStudy={onStudy} onBloom={() => fire("celebrate", "+50 XP", 2400)} />)}</ul>
+      <ul className="beds">{goals?.map((g) => <GoalCard key={g.id} g={g} t={t} act={act} onStudy={onStudy} onThink={(on) => setThinking(on)} onBloom={() => fire("celebrate", "+50 XP", 2400)} />)}</ul>
     </section>
   );
 }

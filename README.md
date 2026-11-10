@@ -37,7 +37,7 @@ Athena is different:
 | 🎓 | **AI tutor** | Ask anything. Pick one of 12 teaching approaches: explain simply, step by step, analogy, worked example, test me, let me discover it, explain my mistakes and more. |
 | 🌍 | **Your language** | Learn in English, French, Arabic or Tunisian Darija, with a full right-to-left interface in Arabic. |
 | 🧭 | **Learning-style quiz** | Five quick steps and one sentence; the AI picks your style (visual, analogy, steps, examples, practice or direct). |
-| 🌱 | **Garden** | Plant study goals, slide your mastery, and watch them bloom. Mastered goals earn 50 XP. |
+| 🌱 | **Garden** | Plant a study goal and Pingo turns it into a step-by-step study plan. Tick off each step and the plant grows until it blooms for 50 XP. |
 | 👑 | **XP, levels and crowns** | 10 XP per question. Level up and Pingo's olive sprig becomes a laurel wreath, a golden laurel, the Crown of Athena, then a radiant crown. |
 | 🏆 | **Team hackathons** | Host a room, share a 6-letter code, form teams. Pingo writes the study brief, the quiz and an open problem, even from your own course notes. |
 | 💬 | **Team Chat** | Chat with teammates (anonymously if you like), **Ask Pingo** for hints, or **Check my explanation** for feedback. Pingo invites quieter teammates in. |
